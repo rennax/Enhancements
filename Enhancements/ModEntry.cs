@@ -33,6 +33,7 @@ namespace Enhancements
                 Directory.CreateDirectory(configPath);
             }
 
+            //Create default config if it does not exist
             if (!File.Exists(Path.Combine(configPath, configFile)))
             {
                 config = new Config()

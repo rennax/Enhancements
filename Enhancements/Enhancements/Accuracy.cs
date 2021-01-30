@@ -147,6 +147,11 @@ namespace Enhancements.Enhancements
             string richText = "";
             richText += $"<size=100%>{(playerData.accuracy * 100f):0.00}%<size=100%> <b>Acc</b>\n";
             richText += $"<size=100%>{(beatAccuracy * 100f):0.00}%<size=100%> <b>Beat</b>";
+            if (config.showHits)
+                richText += $"\n<size=100%>{playerData.hits}<size=100%> <b>Hits</b>";
+            if (config.showHitsTaken)
+                richText += $"\n<size=100%>{playerData.timesPlayerHit}<size=100%> <b>Hits Taken</b>";
+
             text.SetText(richText);
         }
 
@@ -156,6 +161,8 @@ namespace Enhancements.Enhancements
             public Vector3 offset;
             public Vector2 sizeDelta;
             public Color32 color;
+            public bool showHits;
+            public bool showHitsTaken;
 
 
             public Config()
@@ -164,6 +171,8 @@ namespace Enhancements.Enhancements
                 this.offset = new Vector3(0.0f, 0.1f, 0.05f);
                 this.sizeDelta = new Vector2(1.4f, 0.5f);
                 this.color = new Color32(242, 0, 0, 255);
+                this.showHits = true;
+                this.showHitsTaken = true;
             }
 
             public override string ToString()
