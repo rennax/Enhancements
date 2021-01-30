@@ -49,6 +49,10 @@ namespace Enhancements.Enhancements
             string richText = ""; 
             richText += $"<size=100%>0.00%<size=100%> <b>Acc</b>\n";
             richText += $"<size=100%>0.00%<size=100%> <b>Beat</b>";
+            if (config.showHits)
+                richText += $"\n<size=100%>0<size=100%> <b>Hits</b>";
+            if (config.showHitsTaken)
+                richText += $"\n<size=100%>0<size=100%> <b>Hits Taken</b>";
             text.SetText(richText);
 
             rect = go.transform.GetComponent<RectTransform>();
@@ -182,7 +186,8 @@ namespace Enhancements.Enhancements
                 str += $"offset: ({offset.x}, {offset.y}, {offset.z})\n";
                 str += $"size delta (window size): ({sizeDelta.x}, {sizeDelta.y})\n";
                 str += $"font color: R={color.r}, G={color.g}, B={color.b}, A={color.a}\n";
-
+                str += $"show hits: {showHits}\n";
+                str += $"show hits taken: {showHits}\n";
                 return str;
             }
         }

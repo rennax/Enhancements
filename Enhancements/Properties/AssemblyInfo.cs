@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using Enhancements;
 
-[assembly: MelonInfo(typeof(ModEntry), "PW Enhancements", "0.1.0", "Renaxi")]
+[assembly: MelonInfo(typeof(ModEntry), "PW Enhancements", "1.0.0", "Renaxi")]
 [assembly: MelonGame("Cloudhead Games, Ltd.", "Pistol Whip")]
 
 
