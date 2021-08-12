@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MelonLoader;
-using Harmony;
+using HarmonyLib;
 using Enhancements.Enhancements;
 using Newtonsoft.Json;
 using UnityEngine;
@@ -87,7 +87,7 @@ namespace Enhancements
                 config = JsonConvert.DeserializeObject<Config>(jsonText, new Converters.Vector3Converter());
                 configUpdated = true;
             }
-            MelonLogger.Log("Config file changed");
+            MelonLogger.Msg("Config file changed");
         }
 
 

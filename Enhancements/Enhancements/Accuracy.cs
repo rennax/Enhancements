@@ -32,7 +32,7 @@ namespace Enhancements.Enhancements
                 config = new Config();
             else
                 config = accuracyConfig;
-            MelonLogger.Log("Loaded accuracy config: \n" + config.ToString());
+            MelonLogger.Msg("Loaded accuracy config: \n" + config.ToString());
 
             //We dont actually parent, we just want to know the location
             parentGO = GameObject.Find("/UnityXR_VRCameraRig(Clone)/TrackingSpace/Right Hand");
@@ -88,21 +88,21 @@ namespace Enhancements.Enhancements
 
         private void OnConfigUpdate(Messages.ConfigUpdated msg)
         {
-            MelonLogger.Log("Accuracy Updated config");
+            MelonLogger.Msg("Accuracy Updated config");
             this.config = msg.config.accuracyConfig;
             rect.localPosition = config.offset;
         }
 
         private void OnGameStart()
         {
-            MelonLogger.Log("OnGameStart");
+            MelonLogger.Msg("OnGameStart");
             onBeatHits = 0;
             totalHits = 0;
         }
 
         private void OnGameEnd()
         {
-            MelonLogger.Log("OnGameEnd");
+            MelonLogger.Msg("OnGameEnd");
         }
 
         private void ShowRightHand(Messages.ShowRightHand msg)
@@ -121,7 +121,7 @@ namespace Enhancements.Enhancements
         {
             //MelonLogger.Log("UpdateAccuracyDisplay called");
             ScoreItem score = msg.scoreItem;
-            GameData playerData = playerActionManager.playerData;
+            GameData playerData = playerActionManager.gameData;
 
             //Accounting for melee hits is easy or something..
             if (score.onBeatValue == 100)
