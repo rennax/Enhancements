@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Enhancements
 {
-    class Messenger
+    public class Messenger
     {
         private static Messenger _instance;
         private Dictionary<Type, Delegate> simpleActions = new Dictionary<Type, Delegate>();

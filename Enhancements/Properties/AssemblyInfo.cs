@@ -4,9 +4,9 @@ using System.Runtime.InteropServices;
 using MelonLoader;
 using Enhancements;
 
-[assembly: MelonInfo(typeof(ModEntry), "PW Enhancements", "1.0.1", "Renaxi")]
+[assembly: MelonInfo(typeof(ModEntry), "PW Enhancements", "1.0.2", "Renaxi")]
 [assembly: MelonGame("Cloudhead Games, Ltd.", "Pistol Whip")]
-
+[assembly: MelonPriority(50)]
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
@@ -38,5 +38,5 @@ using Enhancements;
 // You can specify all the values or you can default the Build and Revision Numbers
 // by using the '*' as shown below:
 // [assembly: AssemblyVersion("1.0.*")]
-[assembly: AssemblyVersion("1.0.0.0")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyVersion("1.0.0.1")]
+[assembly: AssemblyFileVersion("1.0.0.1")]

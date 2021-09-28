@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using TMPro;
 using UnityEngine;
 using MelonLoader;
-using Harmony;
+using HarmonyLib;
 
 namespace Enhancements.Enhancements
 {
@@ -14,25 +14,32 @@ namespace Enhancements.Enhancements
     {
         private int onBeatHits = 0;
         private int totalHits = 0;
+        private float beatAccuracy = 0;
+
 
         private Config config = null;
 
-        GameObject parentGO;
-        GameObject lookAtGO;
-        GameObject go;
-        RectTransform rect;
-        
-        TextMeshPro text = null;
+        private GameObject parentGO;
+        private GameObject lookAtGO;
+        private GameObject go;
+        private RectTransform rect;
 
-        PlayerActionManager playerActionManager;
+        private TextMeshPro text = null;
+
+        private PlayerActionManager playerActionManager;
 
         public Accuracy(Config accuracyConfig)
         {
             if (accuracyConfig == null)
+            {
                 config = new Config();
+                MelonLogger.Msg("Did not find config. Creating new config");
+            }
             else
+            {
                 config = accuracyConfig;
-            MelonLogger.Msg("Loaded accuracy config: \n" + config.ToString());
+                MelonLogger.Msg("Loaded accuracy config: \n" + config.ToString());
+            }
 
             //We dont actually parent, we just want to know the location
             parentGO = GameObject.Find("/UnityXR_VRCameraRig(Clone)/TrackingSpace/Right Hand");
@@ -45,16 +52,6 @@ namespace Enhancements.Enhancements
             text.fontSize = config.fontSize;
             text.color = config.color;
 
-            //Placeholder text until a level is launched
-            string richText = ""; 
-            richText += $"<size=100%>0.00%<size=100%> <b>Acc</b>\n";
-            richText += $"<size=100%>0.00%<size=100%> <b>Beat</b>";
-            if (config.showHits)
-                richText += $"\n<size=100%>0<size=100%> <b>Hits</b>";
-            if (config.showHitsTaken)
-                richText += $"\n<size=100%>0<size=100%> <b>Hits Taken</b>";
-            text.SetText(richText);
-
             rect = go.transform.GetComponent<RectTransform>();
             rect.sizeDelta = config.sizeDelta;
             rect.localRotation = new Quaternion(0, 180, 0, 0);
@@ -66,24 +63,29 @@ namespace Enhancements.Enhancements
             var messenger = Messenger.Default;
             messenger.Register<Messages.GameStart>(OnGameStart);
             messenger.Register<Messages.GameEnd>(OnGameEnd);
-            messenger.Register<Messages.UpdateAccuracyDisplay>(UpdateAccuracyDisplay);
+            //messenger.Register<Messages.UpdateAccuracyDisplay>(UpdateAccuracyDisplay);
             messenger.Register<Messages.ShowRightHand>(ShowRightHand);
             messenger.Register<Messages.OnLateUpdate>(OnLateUpdate);
             messenger.Register<Messages.ConfigUpdated>(OnConfigUpdate);
-        }
+            messenger.Register<HitDetails>(OnHit);
+            messenger.Register<UpdateEvent>(OnUpdateEvent);
 
+            global::Messenger.Default.Register<global::Messages.PlayerHit>(new Action<global::Messages.PlayerHit>(OnPlayerHit));
+
+            UpdateUI(1, 1, 0, 0);
+        }
 
         ~Accuracy()
         {
-            //Messenger.Default.UnRegister<Messages.OnGunChange>(GunChanged);
             var messenger = Messenger.Default;
 
             messenger.UnRegister<Messages.GameStart>(OnGameStart);
             messenger.UnRegister<Messages.GameEnd>(OnGameEnd);
-            messenger.UnRegister<Messages.UpdateAccuracyDisplay>(UpdateAccuracyDisplay);
             messenger.UnRegister<Messages.ShowRightHand>(ShowRightHand);
             messenger.UnRegister<Messages.OnLateUpdate>(OnLateUpdate);
             messenger.UnRegister<Messages.ConfigUpdated>(OnConfigUpdate);
+            messenger.UnRegister<HitDetails>(OnHit);
+            messenger.UnRegister<UpdateEvent>(OnUpdateEvent);
         }
 
         private void OnConfigUpdate(Messages.ConfigUpdated msg)
@@ -95,14 +97,13 @@ namespace Enhancements.Enhancements
 
         private void OnGameStart()
         {
-            MelonLogger.Msg("OnGameStart");
-            onBeatHits = 0;
-            totalHits = 0;
+            Reset();
+
+            UpdateUI(1, 1, 0, 0);
         }
 
         private void OnGameEnd()
         {
-            MelonLogger.Msg("OnGameEnd");
         }
 
         private void ShowRightHand(Messages.ShowRightHand msg)
@@ -117,47 +118,85 @@ namespace Enhancements.Enhancements
             rect.localRotation *= Quaternion.Euler(0, 180f, 0);
         }
 
-        private void UpdateAccuracyDisplay(Messages.UpdateAccuracyDisplay msg)
+        [HarmonyPatch(typeof(GameplayDatabase), "UpdateScore")]
+        public static class GameDBMod
         {
-            //MelonLogger.Log("UpdateAccuracyDisplay called");
-            ScoreItem score = msg.scoreItem;
-            GameData playerData = playerActionManager.gameData;
+            public static void Postfix(HitDetails hitDetails, ScoreItem scoreItem, int hitCount, int multShift)
+            {
+                Messenger.Default.Send(hitDetails);
+            }
+        }
 
-            //Accounting for melee hits is easy or something..
-            if (score.onBeatValue == 100)
+        [HarmonyPatch(typeof(GameData), "AddScore")]
+        public static class GameData_AddScoreHook
+        {
+            public static void Postfix(ScoreItem score)
             {
-                onBeatHits += 1;
-                totalHits += 1;
+                Messenger.Default.Send<UpdateEvent>(new UpdateEvent { });
             }
-            else if (score.onBeatValue == 200)
-            {
-                onBeatHits += 2;
-                totalHits += 2;
-            }
-            else if (score.onBeatValue == 400)
-            {
-                onBeatHits += 4;
-                totalHits += 4;
-            }
-            else
-                totalHits++; // This is just normal pistol shot without onbeat value
+        }
 
-            float beatAccuracy = 0;
+        private void OnHit(HitDetails hitDetails)
+        {
+            totalHits += hitDetails.severity; //Severity is aparently number of 100s so if boomstick kills chucknorris guy (800 total) severity is 4
+            if (hitDetails.howOnBeat == 1)
+                onBeatHits += hitDetails.severity;
+            
             if (totalHits > 0)
             {
                 beatAccuracy = ((float)onBeatHits) / (float)totalHits;
             }
+        }
 
+        void OnUpdateEvent(UpdateEvent obj)
+        {
+            GameData playerData = playerActionManager.gameData; // for accuracy only
+            UpdateUI(playerData.accuracy, beatAccuracy, totalHits, playerData.timesPlayerHit);
+
+            Messenger.Default.Send(new Messages.UpdateHits() { Hits = totalHits });
+            Messenger.Default.Send(new Messages.UpdatedInternalScore { OnBeatAccuracy = beatAccuracy, Accuracy = playerData.accuracy, Score = playerData.score });
+        }
+
+        void OnPlayerHit(global::Messages.PlayerHit obj)
+        {
+            GameData playerData = playerActionManager.gameData;
+            Messenger.Default.Send(new Messages.UpdateHitsTaken() { HitsTaken = playerData.timesPlayerHit });
+            UpdateUI(playerData.accuracy, beatAccuracy, totalHits, playerData.timesPlayerHit);
+        }
+
+        private void UpdateUI(float accuracy, float onBeat, int hits, int hitsTaken)
+        {
             string richText = "";
-            richText += $"<size=100%>{(playerData.accuracy * 100f):0.00}%<size=100%> <b>Acc</b>\n";
-            richText += $"<size=100%>{(beatAccuracy * 100f):0.00}%<size=100%> <b>Beat</b>";
+            richText += $"<size=100%>{(accuracy * 100f):0.00}%<size=100%> <b>Acc</b>\n";
+            richText += $"<size=100%>{(onBeat * 100f):0.00}%<size=100%> <b>Beat</b>";
             if (config.showHits)
-                richText += $"\n<size=100%>{playerData.hits}<size=100%> <b>Hits</b>";
+            {
+                richText += $"\n<size=100%>{hits}<size=100%> <b>Hits</b>";
+            }
             if (config.showHitsTaken)
-                richText += $"\n<size=100%>{playerData.timesPlayerHit}<size=100%> <b>Hits Taken</b>";
+            {
+                richText += $"\n<size=100%>{hitsTaken}<size=100%> <b>Hits Taken</b>";
+            }
 
             text.SetText(richText);
         }
+
+        private void Reset()
+        {
+            onBeatHits = 0;
+            totalHits = 0;
+            beatAccuracy = 0;
+            Messenger.Default.Send(new Messages.UpdateHitsTaken() { HitsTaken = 0 });
+            Messenger.Default.Send(new Messages.UpdateHits() { Hits = 0});
+            //Acc and OnBeat are 1 to show 100% similar to beat saber when game starts
+            Messenger.Default.Send(new Messages.UpdatedInternalScore { OnBeatAccuracy = 1, Accuracy = 1, Score = 0 });
+        }
+
+        internal class UpdateEvent
+        {
+
+        }
+
 
         public class Config
         {

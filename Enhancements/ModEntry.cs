@@ -76,7 +76,6 @@ namespace Enhancements
             watcher.Changed += OnChanged;
             // Begin watching.
             watcher.EnableRaisingEvents = true;
-
         }
 
         private void OnChanged(object source, FileSystemEventArgs e)
@@ -105,6 +104,8 @@ namespace Enhancements
                 }
             }
         }
+
+
 
 
         [HarmonyPatch(typeof(GameData), "AddScore", new System.Type[1] { typeof(ScoreItem) })]

@@ -39,6 +39,23 @@ namespace Enhancements
             public ScoreItem scoreItem;
         }
 
+        public class UpdatedInternalScore
+        {
+            public float OnBeatAccuracy { get; set; }
+            public float Accuracy { get; set; }
+            public int Score { get; set; }
+        }
+
+        public class UpdateHits
+        {
+            public int Hits { get; set; }
+        }
+
+        public class UpdateHitsTaken
+        {
+            public int HitsTaken { get; set; }
+        }
+
 
         public class OnLateUpdate
         { }
