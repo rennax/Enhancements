@@ -12,7 +12,7 @@ namespace Enhancements.Enhancements
 {
     public class Accuracy
     {
-        private int onBeatHits = 0;
+        private float onBeatHits = 0;
         private int totalHits = 0;
         private float beatAccuracy = 0;
 
@@ -139,12 +139,12 @@ namespace Enhancements.Enhancements
         private void OnHit(HitDetails hitDetails)
         {
             totalHits += hitDetails.severity; //Severity is aparently number of 100s so if boomstick kills chucknorris guy (800 total) severity is 4
-            if (hitDetails.howOnBeat == 1)
-                onBeatHits += hitDetails.severity;
+
+            onBeatHits += hitDetails.howOnBeat*(float)hitDetails.severity; //howOnBeat is now a float and we can use that to cover both normal and rythmic mods
             
             if (totalHits > 0)
             {
-                beatAccuracy = ((float)onBeatHits) / (float)totalHits;
+                beatAccuracy = onBeatHits / (float)totalHits;
             }
         }
 
@@ -190,6 +190,7 @@ namespace Enhancements.Enhancements
             Messenger.Default.Send(new Messages.UpdateHits() { Hits = 0});
             //Acc and OnBeat are 1 to show 100% similar to beat saber when game starts
             Messenger.Default.Send(new Messages.UpdatedInternalScore { OnBeatAccuracy = 1, Accuracy = 1, Score = 0 });
+
         }
 
         internal class UpdateEvent
