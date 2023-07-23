@@ -4,7 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using TMPro;
+using Il2CppTMPro;
+using Il2Cpp;
 
 namespace Enhancements.Enhancements
 {
