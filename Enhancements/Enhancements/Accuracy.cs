@@ -60,22 +60,12 @@ namespace Enhancements.Enhancements
         private void Awake()
         {
             var messenger = Transport.Messenger.Default;
-            //messenger.Register<Transport.Messages.GameEnd>(OnGameEnd);
-            //messenger.Register<Transport.Messages.UpdateAccuracyDisplay>(UpdateAccuracyDisplay);
-            //messenger.Register<Transport.Messages.ShowRightHand>(ShowRightHand);
-            //messenger.Register<Transport.Messages.ConfigUpdated>(OnConfigUpdate);
-            //messenger.Register<HitDetails>(OnHit);
-            //messenger.Register<UpdateEvent>(OnUpdateEvent);
-
-
 
             Messenger.Default.Register<PlayerHit>(new Action<PlayerHit>(OnPlayerHit));
             Messenger.Default.Register<EnemyHitEvent>(new Action<EnemyHitEvent>(OnEnemyHit));
             Messenger.Default.Register<EnemyKillEvent>(new Action<EnemyKillEvent>(OnEnemyKill));
             Messenger.Default.Register<GameStartEvent>(new Action<GameStartEvent>(OnGameStart));
             Messenger.Default.Register<GunsChanged>(new Action<GunsChanged>(OnGunChanged));
-
-            //Messenger.Default.Register<GameEndEvent>(new Action<GameEndEvent>(OnGameEnd));
         }
 
         private void OnGunChanged(GunsChanged obj)
@@ -93,15 +83,6 @@ namespace Enhancements.Enhancements
 
         private void OnDestroy()
         {
-
-            //var messenger = Transport.Messenger.Default;
-
-            //messenger.UnRegister<Transport.Messages.GameEnd>(OnGameEnd);
-            //messenger.UnRegister<Transport.Messages.ShowRightHand>(ShowRightHand);
-            //messenger.UnRegister<Transport.Messages.OnLateUpdate>(OnLateUpdate);
-            ////messenger.UnRegister<Transport.Messages.ConfigUpdated>(OnConfigUpdate);
-            ////messenger.UnRegister<HitDetails>(OnHit);
-            //messenger.UnRegister<UpdateEvent>(OnUpdateEvent);
         }
 
         //We use update to initialize fields since many of the objects are not available at start.
@@ -211,7 +192,7 @@ namespace Enhancements.Enhancements
             if (GameManager.Instance.playing)
             {
                 GameData data = actionManager.gameData;
-                UpdateUI(data.accuracy, beatAccuracy, totalHits, data.timesPlayerHit);
+                UpdateUI(data.accuracy, data.onBeat, totalHits, data.timesPlayerHit);
             }
             else
             {
@@ -219,7 +200,7 @@ namespace Enhancements.Enhancements
                 if (data == null) // is null when you initially launch the game
                     UpdateUI(1, 1, 0, 0);
                 else
-                    UpdateUI(data.accuracy, beatAccuracy, totalHits, data.timesPlayerHit);
+                    UpdateUI(data.accuracy, data.onBeat, totalHits, data.timesPlayerHit);
             }
 
         }
